@@ -161,10 +161,13 @@ func! s:CreateFolds(inverse) " {{{1
     let sav_cur = getpos(".")
 
     let matches = []	" list of lnums
-    if !a:inverse
+    if a:inverse == 0
 	global//call add(matches, line("."))
-    else
+    elseif a:inverse == 1
 	vglobal//call add(matches, line("."))
+    else
+	let a:current_word = '\v<' . expand("<cword>") . '>'
+	exe 'global/' . a:current_word . '/call add(matches, line("."))'
     endif
 
     let nmatches = len(matches)
@@ -188,11 +191,14 @@ func! s:CreateFolds(inverse) " {{{1
 endfunc
 
 func! <sid>SearchFoldEnable(inverse) "{{{1
-    " return number of matches
-    if !search("", "n")
-	" last search pattern not found, do nothing
-	return 0
+    if a:inverse != 2
+	" return number of matches
+	if !search("", "n")
+	    " last search pattern not found, do nothing
+	    return 0
+	endif
     endif
+
     if (!exists("w:searchfold") || w:searchfold.bufnr != bufnr(""))
 	\ && &fdt != s:foldtext
 	" remember settings
@@ -269,10 +275,10 @@ endfunc
 "     " range arg: ignore range given by accident
 "     let pat = input("Which regexp? ", @/)
 "     if pat == ""
-" 	if exists("w:searchfold")
-" 	    call SearchFoldRestore()
-" 	endif
-" 	return
+"	if exists("w:searchfold")
+"	    call SearchFoldRestore()
+"	endif
+"	return
 "     endif
 "     let @/ = pat
 "     call histadd("search", @/)
@@ -281,8 +287,8 @@ endfunc
 
 " :call F()	only for backwards compatibility
 
-func! SearchFold(...) "{{{1
-    let inverse = a:0>=1 && a:1
+func! SearchFold(param) "{{{1
+    let inverse = a:param
     if v:count >= 1
 	let g:searchfold_foldlevel = v:count - 1
     endif
@@ -305,14 +311,16 @@ func! SearchFold(...) "{{{1
 endfunc
 
 " Mappings: {{{1
-nn <silent> <Plug>SearchFoldNormal   :<C-U>call SearchFold(0)<CR>
-nn <silent> <Plug>SearchFoldInverse  :<C-U>call SearchFold(1)<CR>
-nn <silent> <Plug>SearchFoldRestore  :<C-U>call SearchFoldRestore()<CR>
+nn <silent> <Plug>SearchFoldNormal	    :<C-U>call SearchFold(0)<CR>
+nn <silent> <Plug>SearchFoldInverse	    :<C-U>call SearchFold(1)<CR>
+nn <silent> <Plug>SearchFoldCurrentWord	    :<C-U>call SearchFold(2)<CR>
+nn <silent> <Plug>SearchFoldRestore	    :<C-U>call SearchFoldRestore()<CR>
 
 if g:searchfold_do_maps
-    nmap <Leader>z   <Plug>SearchFoldNormal
-    nmap <Leader>iz  <Plug>SearchFoldInverse
-    nmap <Leader>Z   <Plug>SearchFoldRestore
+    nmap <Leader>zs   <Plug>SearchFoldNormal
+    nmap <Leader>zi   <Plug>SearchFoldInverse
+    nmap <Leader>ze   <Plug>SearchFoldRestore
+    nmap <Leader>zw   <Plug>SearchFoldCurrentWord
 endif
 
 " Modeline: {{{1
