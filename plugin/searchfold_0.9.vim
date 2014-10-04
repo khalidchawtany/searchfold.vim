@@ -156,14 +156,14 @@ func! s:FoldNested(from, to) " {{{1
     return 1
 endfunc
 
-func! s:CreateFolds(inverse) " {{{1
+func! s:CreateFolds(FoldSearchCriteria) " {{{1
     " create search folds for the whole buffer based on last search pattern
     let sav_cur = getpos(".")
 
     let matches = []	" list of lnums
-    if a:inverse == 0
+    if a:FoldSearchCriteria == 'PreviousSearchResult'
 	global//call add(matches, line("."))
-    elseif a:inverse == 1
+    elseif a:FoldSearchCriteria == 'InverseOfPreviousSearchResult'
 	vglobal//call add(matches, line("."))
     else
 	let a:current_word = '\v<' . expand("<cword>") . '>'
@@ -190,8 +190,8 @@ func! s:CreateFolds(inverse) " {{{1
     return nmatches
 endfunc
 
-func! <sid>SearchFoldEnable(inverse) "{{{1
-    if a:inverse != 2
+func! <sid>SearchFoldEnable(FoldSearchCriteria) "{{{1
+    if a:FoldSearchCriteria != 'CurrentWord'
 	" return number of matches
 	if !search("", "n")
 	    " last search pattern not found, do nothing
@@ -219,7 +219,7 @@ func! <sid>SearchFoldEnable(inverse) "{{{1
     if exists("w:searchfold")
 	let b:searchfold = w:searchfold
     endif
-    return s:CreateFolds(a:inverse)
+    return s:CreateFolds(a:FoldSearchCriteria)
 endfunc
 func! SearchFoldRestore() "{{{1
     " turn off
@@ -287,12 +287,11 @@ endfunc
 
 " :call F()	only for backwards compatibility
 
-func! SearchFold(param) "{{{1
-    let inverse = a:param
+func! SearchFold(FoldSearchCriteria) "{{{1
     if v:count >= 1
 	let g:searchfold_foldlevel = v:count - 1
     endif
-    let nmatches = <sid>SearchFoldEnable(inverse)
+    let nmatches = <sid>SearchFoldEnable(a:FoldSearchCriteria)
     " at most one match per line counted
     if nmatches == 0
 	echohl ErrorMsg
@@ -311,9 +310,9 @@ func! SearchFold(param) "{{{1
 endfunc
 
 " Mappings: {{{1
-nn <silent> <Plug>SearchFoldNormal	    :<C-U>call SearchFold(0)<CR>
-nn <silent> <Plug>SearchFoldInverse	    :<C-U>call SearchFold(1)<CR>
-nn <silent> <Plug>SearchFoldCurrentWord	    :<C-U>call SearchFold(2)<CR>
+nn <silent> <Plug>SearchFoldNormal	    :<C-U>call SearchFold('PreviousSearchResult')<CR>
+nn <silent> <Plug>SearchFoldInverse	    :<C-U>call SearchFold('InverseOfPreviousSearchResult')<CR>
+nn <silent> <Plug>SearchFoldCurrentWord	    :<C-U>call SearchFold('CurrentWord')<CR>
 nn <silent> <Plug>SearchFoldRestore	    :<C-U>call SearchFoldRestore()<CR>
 
 if g:searchfold_do_maps
