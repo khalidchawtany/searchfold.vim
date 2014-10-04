@@ -1,3 +1,5 @@
+This a fork of github.com/vim-scripts/searchfold.vim
+
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=2521
 
 This script is an improved version of  f.vim  (vimscript #318).
@@ -9,14 +11,17 @@ Script uses manual folds.  The user's manual folds are not preserved (unlike vim
 
 Usage:
 
-<Leader>z
+<Leader>zs
 fold away lines not matching the last search pattern.
 With [count], change the initial foldlevel to ([count] minus one).  The setting will be stored in g:searchfold_foldlevel and will be used when [count] is omitted.
 
-<Leader>iz
+<Leader>zi
 fold away lines that do match the last search pattern (inverse folding).
 
-<Leader>Z
+<Leader>zi
+fold away lines that do match the word under cursor.
+
+<Leader>ze
 try hard to restore the previous fold settings
 
 
